@@ -28,6 +28,7 @@ attribute :gid,           :kind_of => [String,Integer]
 attribute :home,          :kind_of => String
 attribute :shell,         :kind_of => String
 attribute :password,      :kind_of => String
+attribute :use_plaintext, :default => nil
 attribute :system_user,   :default => false
 attribute :manage_home,   :default => nil
 attribute :create_group,  :default => nil

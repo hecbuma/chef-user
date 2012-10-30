@@ -33,19 +33,8 @@ Array(user_array).each do |i|
   u = data_bag_item(bag, i.gsub(/[.]/, '-'))
   username = u['username'] || u['id']
 
-  def generate_shadowhash(plaintext_pass)
-    require 'digest/sha2'
-    salt = rand(36**8).to_s(36)
-    shadow_hash = plaintext_pass.crypt("$6$" + salt)
-    return shadow_hash
-  end
-
-  if u['plaintext_password']
-    u['password'] = generate_shadowhash u['password']
-  end
-
   user_account username do
-    %w{comment uid gid home shell password system_user manage_home create_group
+    %w{comment uid gid home shell password use_plaintext system_user manage_home create_group
         ssh_keys ssh_keygen}.each do |attr|
       send(attr, u[attr]) if u[attr]
     end

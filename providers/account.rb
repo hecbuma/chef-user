@@ -23,9 +23,21 @@ def load_current_resource
   @my_home = new_resource.home ||
     "#{node['user']['home_root']}/#{new_resource.username}"
   @my_shell = new_resource.shell || node['user']['default_shell']
+  @my_password = if bool(new_resource.use_plaintext, node['user']['use_plaintext'])
+    generate_hash_from_plaintext(new_resource.password)
+  else
+    new_resource.password
+  end
   @manage_home = bool(new_resource.manage_home, node['user']['manage_home'])
   @create_group = bool(new_resource.create_group, node['user']['create_group'])
   @ssh_keygen = bool(new_resource.ssh_keygen, node['user']['ssh_keygen'])
+end
+
+def generate_hash_from_plaintext(plaintext_password)
+  require 'digest/sha2'
+  salt = rand(36**8).to_s(36)
+  shadow_hash = plaintext_password.crypt("$6$" + salt)
+  return shadow_hash
 end
 
 action :create do
@@ -89,7 +101,7 @@ end
 
 def user_resource(exec_action)
   # avoid variable scoping issues in resource block
-  my_home, my_shell, manage_home = @my_home, @my_shell, @manage_home
+  my_home, my_shell, manage_home, my_password = @my_home, @my_shell, @manage_home, @my_password
 
   r = user new_resource.username do
     comment   new_resource.comment  if new_resource.comment
@@ -97,7 +109,7 @@ def user_resource(exec_action)
     gid       new_resource.gid      if new_resource.gid
     home      my_home               if my_home
     shell     my_shell              if my_shell
-    password  new_resource.password if new_resource.password
+    password  my_password           if my_password
     system    new_resource.system_user
     supports  :manage_home => manage_home
     action    :nothing

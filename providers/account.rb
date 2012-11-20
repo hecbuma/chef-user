@@ -24,9 +24,9 @@ def load_current_resource
     "#{node['user']['home_root']}/#{new_resource.username}"
   @my_shell = new_resource.shell || node['user']['default_shell']
   @my_password = if bool(new_resource.use_plaintext, node['user']['use_plaintext'])
-    generate_hash_from_plaintext(new_resource.password)
+    generate_hash_from_plaintext(new_resource.password || node['user']['password'])
   else
-    new_resource.password
+    new_resource.password || node['user']['password']
   end
   @manage_home = bool(new_resource.manage_home, node['user']['manage_home'])
   @create_group = bool(new_resource.create_group, node['user']['create_group'])
